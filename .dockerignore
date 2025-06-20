@@ -1,0 +1,46 @@
+# This file is intentionally left blank for now. 
+
+# Git
+.git
+.gitignore
+
+# Docker
+.dockerignore
+Dockerfile
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Dependencies
+.venv
+venv/
+env/
+node_modules/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!/.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite3
+
+# Test and coverage reports
+.pytest_cache/
+.coverage
+htmlcov/ 
