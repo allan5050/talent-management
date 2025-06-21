@@ -5,4 +5,5 @@ Faker
 sqlalchemy
 psycopg2-binary
 pydantic[email]
+pydantic-settings
 fastapi
