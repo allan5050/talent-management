@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -32,4 +32,7 @@ class MemberResponse(BaseModel):
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
 
-    model_config = ConfigDict(from_attributes=True) 
+    model_config = ConfigDict(from_attributes=True)
+
+class ErrorResponse(BaseModel):
+    detail: str 

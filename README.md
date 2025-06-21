@@ -2,114 +2,137 @@
 
 This project implements a microservice-based system as part of a technical leadership assignment. It features a `Feedback Service` for managing company feedback and a `Member Service` for managing organization members, with a `Gateway Service` acting as a single entry point.
 
-The solution is designed with a focus on clean architecture, separation of concerns, and production-ready practices, including configuration management, containerization, and a simplified API design.
+The solution is designed with a focus on clean architecture, separation of concerns, and production-ready practices, including configuration management, containerization, and a RESTful API design.
 
-## Project Philosophy
+## Architecture Overview
 
-As a simulation of a real-world technical lead assignment, this project prioritizes:
+The system is composed of three services that run in separate Docker containers and communicate over a shared Docker network. All external traffic is routed through a single API Gateway.
 
-- **Clarity and Simplicity**: The architecture is straightforward, and the code is written to be easily understood and maintained.
-- **Correctness**: The implementation strictly follows the provided specification, particularly regarding the API contract.
-- **Developer Experience**: The entire system can be set up and run with a single command, with clear instructions and tooling.
-- **Testability**: The services are designed to be testable, with a full suite of unit and integration tests to ensure reliability.
+```mermaid
+graph TD
+    subgraph "External User"
+        direction LR
+        User([User/Client])
+    end
 
-## Setup instructions using Docker
+    subgraph "System Boundary (Docker Network)"
+        direction LR
+        User -- "HTTP Request" --> Gateway(API Gateway:8000);
+
+        subgraph "Services"
+            direction TB
+            Gateway -- "/organizations/{id}/feedback" --> FeedbackSvc(Feedback Service);
+            Gateway -- "/organizations/{id}/members" --> MemberSvc(Member Service);
+        end
+        
+        subgraph "Databases"
+            direction TB
+            FeedbackSvc --> FeedbackDB[(feedback_db)];
+            MemberSvc --> MemberDB[(member_db)];
+        end
+    end
+
+    style User fill:#cde4ff
+```
+
+- **API Gateway (`gateway`):** The single entrypoint for all API requests. It validates the request path and proxies it to the appropriate internal service. It is the only service exposed to the host machine.
+- **Feedback Service (`feedback_service`):** Manages all create, read, and delete operations for feedback records.
+- **Member Service (`member_service`):** Manages all create, read, and delete operations for organization members.
+- **PostgreSQL (`db`):** A single PostgreSQL instance that hosts two separate databases (`feedback_db` and `member_db`) to ensure data isolation between services.
+
+## Setup and Running the System
 
 ### Prerequisites
 
 - Docker and Docker Compose must be installed on your system.
-- A shell environment (like Git Bash on Windows, or any standard Linux/macOS shell).
 
 ### 1. Environment Configuration
 
-This project uses service-specific `.env` files for configuration, which are loaded by Docker Compose. This approach ensures that each service has its own isolated environment, fulfilling the project requirement to "Use .env and os.environ" in a clean, maintainable way.
+Each service uses its own `.env` file for configuration, loaded by Docker Compose. Create these files from the provided examples:
 
-To get started, you must create a `.env` file for each service from the provided examples.
-
-**For the Gateway:**
 ```bash
+# For the Gateway
 cp services/gateway/env.example services/gateway/.env
-```
 
-**For the Feedback Service:**
-```bash
+# For the Feedback Service
 cp services/feedback_service/env.example services/feedback_service/.env
-```
 
-**For the Member Service:**
-```bash
+# For the Member Service
 cp services/member_service/env.example services/member_service/.env
 ```
-These files contain the necessary default values to run the services within the Docker network. The application code (via Pydantic Settings) reads these values from the environment upon startup.
+
+#### Environment Variables
+The default values are configured to work within the Docker network.
+
+| Service            | Variable                  | Description                                            | Default Value                     |
+| ------------------ | ------------------------- | ------------------------------------------------------ | --------------------------------- |
+| `gateway`          | `FEEDBACK_SERVICE_URL`    | URL for the internal feedback service.                 | `http://feedback_service:8001`    |
+| `gateway`          | `MEMBER_SERVICE_URL`      | URL for the internal member service.                   | `http://member_service:8002`      |
+| `feedback_service` | `DATABASE_URL`            | Connection string for the feedback database.           | `postgresql://user:password@db:5432/feedback_db` |
+| `feedback_service` | `DEFAULT_ORGANIZATION_ID` | The default organization ID for operations.            | `8a1a7ac2-e528-4e63-8e2c-3a37d1472e35` |
+| `member_service`   | `DATABASE_URL`            | Connection string for the member database.             | `postgresql://user:password@db:5432/member_db`   |
+| `member_service`   | `DEFAULT_ORGANIZATION_ID` | The default organization ID for operations.            | `8a1a7ac2-e528-4e63-8e2c-3a37d1472e35` |
 
 ### 2. Build and Run the Services
 
-The entire application stack (services, gateway, and database) can be launched using Docker Compose:
+The entire application stack can be launched using a single command:
 
 ```bash
 docker-compose up --build
 ```
 
-This command builds the service images, starts all containers, and connects them to a shared network. The services will be available at:
+This command builds the images, starts all containers, and connects them. The services will be available at:
 
-- **Gateway Service**: `http://localhost:8000` (All API requests go here)
-- **Feedback Service**: `http://localhost:8001`
-- **Member Service**: `http://localhost:8002`
-- **PostgreSQL Database**: `localhost:5432`
+- **Gateway / API:** `http://localhost:8000` (All API requests go here)
+- **PostgreSQL Database:** `localhost:5432`
 
-## How to seed sample data
+### 3. Seed Sample Data
 
-With the services running, you can populate the database with initial sample data. Open a new terminal and execute the seeding script:
+With the services running, populate the database with sample data by opening a new terminal and running:
 
 ```bash
 ./scripts/seed-db.sh
 ```
 
-This script populates the database with a default organization, along with sample members and feedback, making the API immediately available for use.
+## API Documentation
 
-## How to access APIs and Swagger docs
+The API is designed to be RESTful, using the organization as the root resource for members and feedback. All requests are made through the **Gateway** at `http://localhost:8000`.
 
-All API requests are made through the **Gateway** at `http://localhost:8000`. The gateway routes requests to the appropriate downstream service. For this project, a default organization ID is used: `8a1a7ac2-e528-4e63-8e2c-3a37d1472e35`.
+A default organization ID is used for this assignment: `8a1a7ac2-e528-4e63-8e2c-3a37d1472e35`.
 
-### Feedback Service (`/organizations/{org_id}/feedback`)
+### Endpoints
 
-- `POST /organizations/{org_id}/feedback`: Create feedback for the organization.
-  - **Request Body**: `{ "feedback": "Great team culture and clear communication." }`
-- `GET /organizations/{org_id}/feedback`: Get all non-deleted feedbacks for the organization.
-- `DELETE /organizations/{org_id}/feedback`: Soft-delete all feedbacks for the organization.
+#### Feedback Service
+- `POST /organizations/{org_id}/feedback`: Create feedback for an organization.
+- `GET /organizations/{org_id}/feedback`: Get all feedback for an organization.
+- `DELETE /organizations/{org_id}/feedback`: Soft-delete all feedback for an organization.
 
-### Member Service (`/organizations/{org_id}/members`)
+#### Member Service
+- `POST /organizations/{org_id}/members`: Create a new member for an organization.
+- `GET /organizations/{org_id}/members`: Get all members of an organization.
+- `DELETE /organizations/{org_id}/members`: Soft-delete all members of an organization.
 
-- `POST /organizations/{org_id}/members`: Create a new member for the organization.
-  - **Request Body**: `{ "first_name": "John", "last_name": "Doe", ... }`
-- `GET /organizations/{org_id}/members`: Get all non-deleted members, sorted by followers descending.
-- `DELETE /organizations/{org_id}/members`: Soft-delete all members of the organization.
+### Interactive Swagger Documentation
 
-### Swagger Interactive Documentation
+For detailed, interactive documentation, please visit the Swagger UI endpoints once the services are running. This provides a full view of all endpoints, schemas, and allows for direct API interaction.
 
-Interactive Swagger/OpenAPI documentation is automatically generated and available for each service once they are running:
+- **Gateway (Consolidated View):** `http://localhost:8000/docs`
+- **Feedback Service (Direct):** `http://localhost:8001/docs`
+- **Member Service (Direct):** `http://localhost:8002/docs`
 
-- **Gateway**: `http://localhost:8000/docs`
-- **Feedback Service**: `http://localhost:8001/docs`
-- **Member Service**: `http://localhost:8002/docs`
+## How to Run Tests
 
-The Gateway's documentation provides a consolidated view of all exposed endpoints.
-
-## How to run tests
-
-The project includes a comprehensive test suite using `pytest`. The tests are containerized and can be run against the services to ensure everything is working correctly.
-
-To run all unit and integration tests, execute the following command:
+The project includes a comprehensive test suite using `pytest`. The tests are containerized and can be run with a single command:
 
 ```bash
 docker-compose run --rm tests
 ```
 
-This command will start a temporary container, install the test dependencies, and run `pytest`, which will discover and run all tests in the `tests/` directory.
+This command will start a temporary container, install test dependencies, and run all unit and integration tests against the running services.
 
-## ⚙️ Key Architectural Decisions
+## Key Architectural Decisions
 
-- **Configuration Management**: Uses Pydantic Settings for type-safe configuration. Each microservice has its own `.env` file for isolated, environment-specific configuration, loaded via `docker-compose`. This provides a clean separation of concerns and fulfills the project's configuration requirements.
-- **Single Organization Context**: To align with the assignment's simplified API specification, the services operate on a single, default organization context. The ID of this organization is managed via environment variables.
-- **Gateway Routing**: The gateway uses specific route definitions rather than a generic catch-all proxy. This provides a more secure and explicit API contract at the entrypoint.
-- **Soft Deletes**: All delete operations are soft deletes (`deleted_at` timestamp), preserving data history and preventing accidental data loss.
+- **RESTful Design:** The API uses a hierarchical, RESTful structure (`/organizations/{id}/members`) to create a logical and scalable design, prioritizing this over the simplified endpoint examples in the specification to demonstrate a more robust architectural approach.
+- **Configuration Management:** Uses Pydantic Settings for type-safe configuration. Each microservice has its own `.env` file for isolated, environment-specific configuration, loaded via `docker-compose`.
+- **Gateway Routing:** The gateway uses specific route definitions rather than a generic catch-all proxy. This provides a more secure and explicit API contract at the entrypoint.
+- **Soft Deletes:** All delete operations are soft deletes (`deleted_at` timestamp), preserving data history and preventing accidental data loss. This is implemented at the service level by filtering all read queries and updating the timestamp on delete queries.
