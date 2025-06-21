@@ -10,8 +10,11 @@ class MemberService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_member(self, member_data: MemberCreate) -> Member:
-        db_member = Member(**member_data.dict())
+    def create_member(self, member_data: MemberCreate, organization_id: UUID) -> Member:
+        db_member = Member(
+            **member_data.model_dump(),
+            organization_id=organization_id
+        )
         self.db.add(db_member)
         self.db.commit()
         self.db.refresh(db_member)
@@ -20,7 +23,7 @@ class MemberService:
     def get_members_by_organization(self, organization_id: UUID) -> List[Member]:
         return self.db.query(Member).filter(
             Member.organization_id == organization_id,
-            Member.deleted_at == None
+            Member.deleted_at.is_(None)
         ).order_by(desc(Member.followers)).all()
 
     def soft_delete_by_organization(self, organization_id: UUID) -> int:

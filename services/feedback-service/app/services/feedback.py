@@ -15,9 +15,9 @@ class FeedbackService:
             Feedback.deleted_at.is_(None)
         ).all()
 
-    def create_feedback(self, feedback_data: FeedbackCreate) -> Feedback:
+    def create_feedback(self, feedback_data: FeedbackCreate, organization_id: UUID) -> Feedback:
         db_feedback = Feedback(
-            organization_id=feedback_data.organization_id,
+            organization_id=organization_id,
             feedback=feedback_data.feedback
         )
         self.db.add(db_feedback)

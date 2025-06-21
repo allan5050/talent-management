@@ -20,10 +20,9 @@ app.add_middleware(
 )
 
 # Include the proxy routers
-# Note: The paths here are now prefixes for the routes in the included routers.
-# e.g., a route "/organization/{id}" in feedback.router becomes "/feedback/organization/{id}"
-app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"])
-app.include_router(members.router, prefix="/members", tags=["Members"])
+# The routes already include the service names in their paths
+app.include_router(feedback.router, tags=["Feedback"])
+app.include_router(members.router, tags=["Members"])
 
 @app.get("/")
 def read_root():

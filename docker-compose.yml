@@ -2,6 +2,10 @@
 
 version: '3.8'
 
+networks:
+  talent-management-net:
+    driver: bridge
+
 services:
   gateway:
     build: ./services/gateway
@@ -11,38 +15,94 @@ services:
       - FEEDBACK_SERVICE_URL=http://feedback-service:8001
       - MEMBER_SERVICE_URL=http://member-service:8002
     depends_on:
-      - feedback-service
-      - member-service
+      feedback-service:
+        condition: service_healthy
+      member-service:
+        condition: service_healthy
+    networks:
+      - talent-management-net
 
   feedback-service:
     build: ./services/feedback-service
     ports:
       - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/feedback_db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@db:5432/feedback_db}
+      - PORT=8001
     depends_on:
-      - db
+      db-init:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - talent-management-net
 
   member-service:
     build: ./services/member-service
     ports:
       - "8002:8002"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/member_db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@db:5432/member_db}
+      - PORT=8002
     depends_on:
-      - db
+      db-init:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - talent-management-net
 
   db:
     image: postgres:13
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=feedback_db # This will create one DB, member_db needs to be created manually or via init script
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/create-dbs.sh:/docker-entrypoint-initdb.d/create-dbs.sh
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - talent-management-net
+
+  db-init:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/feedback_db
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "scripts/init_db.py"]
+    networks:
+      - talent-management-net
+
+  tests:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+    depends_on:
+      - gateway
+      - feedback-service
+      - member-service
+      - db-init
+    command: ["pytest", "-v", "--cov=app"]
+    networks:
+      - talent-management-net
 
 volumes:
   postgres_data: 

@@ -13,7 +13,6 @@ class MemberBase(BaseModel):
     following: int
     title: Optional[str] = None
     email: EmailStr
-    organization_id: UUID
 
 
 class MemberCreate(MemberBase):
@@ -32,6 +31,7 @@ class MemberUpdate(BaseModel):
 
 class MemberResponse(MemberBase):
     id: UUID
+    organization_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None

@@ -6,8 +6,6 @@ from uuid import UUID
 
 class FeedbackBase(BaseModel):
     feedback: str
-    # In a real app, this would likely be validated against an Organization service
-    organization_id: UUID
 
 
 class FeedbackCreate(FeedbackBase):
@@ -20,6 +18,7 @@ class FeedbackUpdate(BaseModel):
 
 class FeedbackResponse(FeedbackBase):
     id: UUID
+    organization_id: UUID
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime] = None
