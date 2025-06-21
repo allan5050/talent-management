@@ -1,11 +1,10 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    FEEDBACK_SERVICE_URL: str
-    MEMBER_SERVICE_URL: str
-    PORT: int = 8000
+    DATABASE_URL: str
+    PORT: int = 8002
 
     class Config:
         env_file = ".env"
 
-settings = Settings()
+settings = Settings() 
