@@ -20,16 +20,27 @@ As a simulation of a real-world technical lead assignment, this project prioriti
 - Docker and Docker Compose must be installed on your system.
 - A shell environment (like Git Bash on Windows, or any standard Linux/macOS shell).
 
-### 1. Set Up Environment Variables
+### 1. Environment Configuration
 
-The services are configured using a `.env` file. A sample is provided to get you started.
+This project uses service-specific `.env` files for configuration, which are loaded by Docker Compose. This approach ensures that each service has its own isolated environment, fulfilling the project requirement to "Use .env and os.environ" in a clean, maintainable way.
 
+To get started, you must create a `.env` file for each service from the provided examples.
+
+**For the Gateway:**
 ```bash
-# Create a copy of the example environment file
-cp .env.example .env
+cp services/gateway/env.example services/gateway/.env
 ```
 
-The default settings in `.env.example` are pre-configured to work with the `docker-compose` setup. This includes database connection strings and the default organization ID used by the services.
+**For the Feedback Service:**
+```bash
+cp services/feedback_service/env.example services/feedback_service/.env
+```
+
+**For the Member Service:**
+```bash
+cp services/member_service/env.example services/member_service/.env
+```
+These files contain the necessary default values to run the services within the Docker network. The application code (via Pydantic Settings) reads these values from the environment upon startup.
 
 ### 2. Build and Run the Services
 
@@ -98,7 +109,7 @@ This command will start a temporary container, install the test dependencies, an
 
 ## ⚙️ Key Architectural Decisions
 
-- **Single Organization Context**: To align with the assignment's simplified API specification, the services operate on a single, default organization context. The ID of this organization is managed via environment variables, making the API cleaner and simpler for the end-user.
+- **Configuration Management**: Uses Pydantic Settings for type-safe configuration. Each microservice has its own `.env` file for isolated, environment-specific configuration, loaded via `docker-compose`. This provides a clean separation of concerns and fulfills the project's configuration requirements.
+- **Single Organization Context**: To align with the assignment's simplified API specification, the services operate on a single, default organization context. The ID of this organization is managed via environment variables.
 - **Gateway Routing**: The gateway uses specific route definitions rather than a generic catch-all proxy. This provides a more secure and explicit API contract at the entrypoint.
-- **Configuration Management**: All configuration is managed via environment variables and a `.env` file, following 12-factor app principles. This separates configuration from code and makes the services more portable.
 - **Soft Deletes**: All delete operations are soft deletes (`deleted_at` timestamp), preserving data history and preventing accidental data loss.

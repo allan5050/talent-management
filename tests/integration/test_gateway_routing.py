@@ -36,7 +36,7 @@ def test_create_feedback_routing(mock_http_client: dict):
     assert response.status_code == 201
     mock_http_client['feedback'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['feedback'].forward_request.call_args.kwargs
-    assert "feedback-service" in call_kwargs['target_url']
+    assert "feedback_service" in call_kwargs['target_url']
 
 def test_get_feedback_routing(mock_http_client: dict):
     """
@@ -55,7 +55,7 @@ def test_get_feedback_routing(mock_http_client: dict):
     assert response.status_code == 200
     mock_http_client['feedback'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['feedback'].forward_request.call_args.kwargs
-    assert "feedback-service" in call_kwargs['target_url']
+    assert "feedback_service" in call_kwargs['target_url']
 
 def test_create_member_routing(mock_http_client: dict):
     """
@@ -74,7 +74,7 @@ def test_create_member_routing(mock_http_client: dict):
     assert response.status_code == 201
     mock_http_client['member'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['member'].forward_request.call_args.kwargs
-    assert "member-service" in call_kwargs['target_url']
+    assert "member_service" in call_kwargs['target_url']
 
 def test_get_members_routing(mock_http_client: dict):
     """
@@ -93,4 +93,4 @@ def test_get_members_routing(mock_http_client: dict):
     assert response.status_code == 200
     mock_http_client['member'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['member'].forward_request.call_args.kwargs
-    assert "member-service" in call_kwargs['target_url']
+    assert "member_service" in call_kwargs['target_url']
