@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import feedback
-from app.routes import members
+from .routes import feedback
+from .routes import members
 
 app = FastAPI(
     title="Talent Management API Gateway",

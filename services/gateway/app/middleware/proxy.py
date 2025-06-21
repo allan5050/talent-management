@@ -16,8 +16,8 @@ from starlette.datastructures import Headers, MutableHeaders
 import httpx
 import aiohttp
 
-from app.utils.http_client import get_http_client
-from app.config.settings import get_settings
+from ..utils.http_client import get_http_client
+from ..config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 

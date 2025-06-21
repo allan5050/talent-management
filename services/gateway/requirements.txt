@@ -5,6 +5,6 @@ uvicorn[standard]
 aiohttp
 httpx
 certifi
-pydantic
+pydantic[email]
 pydantic-settings
 python-dotenv

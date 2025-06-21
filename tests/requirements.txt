@@ -4,3 +4,5 @@ httpx
 Faker
 sqlalchemy
 psycopg2-binary
+pydantic[email]
+fastapi
