@@ -20,7 +20,7 @@ class FeedbackResponse(FeedbackBase):
     id: UUID
     organization_id: UUID
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
 
     class Config:
