@@ -18,6 +18,6 @@ def health_check():
 
 app.include_router(
     feedback.router,
-    prefix="/feedback",
+    prefix="/organizations",
     tags=["Feedback"],
 )

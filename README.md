@@ -69,21 +69,21 @@ This script populates the database with a default organization, along with sampl
 
 ## How to access APIs and Swagger docs
 
-All API requests are made through the **Gateway** at `http://localhost:8000`. The gateway routes requests to the appropriate downstream service.
+All API requests are made through the **Gateway** at `http://localhost:8000`. The gateway routes requests to the appropriate downstream service. For this project, a default organization ID is used: `8a1a7ac2-e528-4e63-8e2c-3a37d1472e35`.
 
-### Feedback Service (`/feedback`)
+### Feedback Service (`/organizations/{org_id}/feedback`)
 
-- `POST /feedback`: Create feedback for the default organization.
+- `POST /organizations/{org_id}/feedback`: Create feedback for the organization.
   - **Request Body**: `{ "feedback": "Great team culture and clear communication." }`
-- `GET /feedback`: Get all non-deleted feedbacks for the organization.
-- `DELETE /feedback`: Soft-delete all feedbacks for the organization.
+- `GET /organizations/{org_id}/feedback`: Get all non-deleted feedbacks for the organization.
+- `DELETE /organizations/{org_id}/feedback`: Soft-delete all feedbacks for the organization.
 
-### Member Service (`/members`)
+### Member Service (`/organizations/{org_id}/members`)
 
-- `POST /members`: Create a new member for the default organization.
+- `POST /organizations/{org_id}/members`: Create a new member for the organization.
   - **Request Body**: `{ "first_name": "John", "last_name": "Doe", ... }`
-- `GET /members`: Get all non-deleted members, sorted by followers descending.
-- `DELETE /members`: Soft-delete all members of the organization.
+- `GET /organizations/{org_id}/members`: Get all non-deleted members, sorted by followers descending.
+- `DELETE /organizations/{org_id}/members`: Soft-delete all members of the organization.
 
 ### Swagger Interactive Documentation
 

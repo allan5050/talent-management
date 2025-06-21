@@ -18,6 +18,6 @@ def health_check():
 
 app.include_router(
     members.router,
-    prefix="/members",
+    prefix="/organizations",
     tags=["Members"],
 )

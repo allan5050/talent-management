@@ -8,6 +8,8 @@ from services.gateway.app.main import app
 
 client = TestClient(app)
 
+ORG_ID = "8a1a7ac2-e528-4e63-8e2c-3a37d1472e35"  # From seed data
+
 @pytest.fixture
 def mock_http_client():
     """
@@ -21,7 +23,7 @@ def mock_http_client():
 
 def test_create_feedback_routing(mock_http_client: dict):
     """
-    Test that POST /feedback is routed to the feedback service.
+    Test that POST /organizations/{org_id}/feedback is routed to the feedback service.
     """
     async def mock_async_forward(*args, **kwargs):
         return Response(
@@ -31,16 +33,17 @@ def test_create_feedback_routing(mock_http_client: dict):
         )
     mock_http_client['feedback'].forward_request.side_effect = mock_async_forward
 
-    response = client.post("/feedback", json={"feedback": "great"})
+    response = client.post(f"/organizations/{ORG_ID}/feedback", json={"feedback": "great"})
 
     assert response.status_code == 201
     mock_http_client['feedback'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['feedback'].forward_request.call_args.kwargs
     assert "feedback_service" in call_kwargs['target_url']
+    assert f"/organizations/{ORG_ID}/feedback" in call_kwargs['target_url']
 
 def test_get_feedback_routing(mock_http_client: dict):
     """
-    Test that GET /feedback is routed to the feedback service.
+    Test that GET /organizations/{org_id}/feedback is routed to the feedback service.
     """
     async def mock_async_forward(*args, **kwargs):
         return Response(
@@ -50,16 +53,17 @@ def test_get_feedback_routing(mock_http_client: dict):
         )
     mock_http_client['feedback'].forward_request.side_effect = mock_async_forward
 
-    response = client.get("/feedback")
+    response = client.get(f"/organizations/{ORG_ID}/feedback")
 
     assert response.status_code == 200
     mock_http_client['feedback'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['feedback'].forward_request.call_args.kwargs
     assert "feedback_service" in call_kwargs['target_url']
+    assert f"/organizations/{ORG_ID}/feedback" in call_kwargs['target_url']
 
 def test_create_member_routing(mock_http_client: dict):
     """
-    Test that POST /members is routed to the member service.
+    Test that POST /organizations/{org_id}/members is routed to the member service.
     """
     async def mock_async_forward(*args, **kwargs):
         return Response(
@@ -69,16 +73,17 @@ def test_create_member_routing(mock_http_client: dict):
         )
     mock_http_client['member'].forward_request.side_effect = mock_async_forward
 
-    response = client.post("/members", json={"first_name": "Test"})
+    response = client.post(f"/organizations/{ORG_ID}/members", json={"first_name": "Test"})
 
     assert response.status_code == 201
     mock_http_client['member'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['member'].forward_request.call_args.kwargs
     assert "member_service" in call_kwargs['target_url']
+    assert f"/organizations/{ORG_ID}/members" in call_kwargs['target_url']
 
 def test_get_members_routing(mock_http_client: dict):
     """
-    Test that GET /members is routed to the member service.
+    Test that GET /organizations/{org_id}/members is routed to the member service.
     """
     async def mock_async_forward(*args, **kwargs):
         return Response(
@@ -88,9 +93,10 @@ def test_get_members_routing(mock_http_client: dict):
         )
     mock_http_client['member'].forward_request.side_effect = mock_async_forward
 
-    response = client.get("/members")
+    response = client.get(f"/organizations/{ORG_ID}/members")
 
     assert response.status_code == 200
     mock_http_client['member'].forward_request.assert_called_once()
     call_kwargs = mock_http_client['member'].forward_request.call_args.kwargs
     assert "member_service" in call_kwargs['target_url']
+    assert f"/organizations/{ORG_ID}/members" in call_kwargs['target_url']

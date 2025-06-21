@@ -4,6 +4,7 @@ import pytest
 from faker import Faker
 
 BASE_URL = os.environ.get("GATEWAY_URL", "http://localhost:8000")
+ORG_ID = "8a1a7ac2-e528-4e63-8e2c-3a37d1472e35"  # From seed data
 fake = Faker()
 
 @pytest.fixture(scope="module")
@@ -25,25 +26,25 @@ def test_feedback_workflow(client: httpx.Client):
     """
     # 1. Create feedback
     feedback_text = fake.sentence()
-    response = client.post("/feedback", json={"feedback": feedback_text})
+    response = client.post(f"/organizations/{ORG_ID}/feedback", json={"feedback": feedback_text})
     assert response.status_code == 201
     created_feedback = response.json()
     assert created_feedback["feedback"] == feedback_text
     assert "id" in created_feedback
 
     # 2. Get feedback and verify creation
-    response = client.get("/feedback")
+    response = client.get(f"/organizations/{ORG_ID}/feedback")
     assert response.status_code == 200
     feedback_list = response.json()
     assert isinstance(feedback_list, list)
     assert any(item["id"] == created_feedback["id"] for item in feedback_list)
     
     # 3. Delete all feedback
-    response = client.delete("/feedback")
+    response = client.delete(f"/organizations/{ORG_ID}/feedback")
     assert response.status_code == 204
 
     # 4. Verify deletion
-    response = client.get("/feedback")
+    response = client.get(f"/organizations/{ORG_ID}/feedback")
     assert response.status_code == 200
     assert response.json() == []
 
@@ -62,14 +63,14 @@ def test_member_workflow(client: httpx.Client):
         "title": fake.job(),
         "email": fake.email(),
     }
-    response = client.post("/members", json=member_data)
+    response = client.post(f"/organizations/{ORG_ID}/members", json=member_data)
     assert response.status_code == 201
     created_member = response.json()
     assert created_member["login"] == member_data["login"]
     assert "id" in created_member
 
     # 2. Get members and verify creation and sorting
-    response = client.get("/members")
+    response = client.get(f"/organizations/{ORG_ID}/members")
     assert response.status_code == 200
     member_list = response.json()
     assert isinstance(member_list, list)
@@ -78,10 +79,10 @@ def test_member_workflow(client: httpx.Client):
     assert member_list == sorted(member_list, key=lambda x: x["followers"], reverse=True)
 
     # 3. Delete all members
-    response = client.delete("/members")
+    response = client.delete(f"/organizations/{ORG_ID}/members")
     assert response.status_code == 204
 
     # 4. Verify deletion
-    response = client.get("/members")
+    response = client.get(f"/organizations/{ORG_ID}/members")
     assert response.status_code == 200
     assert response.json() == [] 
