@@ -8,3 +8,4 @@ certifi
 pydantic[email]
 pydantic-settings
 python-dotenv
+debugpy

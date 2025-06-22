@@ -18,6 +18,11 @@ services:
         condition: service_healthy
       member_service:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - talent-management-net
 
@@ -99,10 +104,14 @@ services:
       - FEEDBACK_DATABASE_URL=postgresql://user:password@db:5432/feedback_db_test
       - MEMBER_DATABASE_URL=postgresql://user:password@db:5432/member_db_test
     depends_on:
-      - gateway
-      - feedback_service
-      - member_service
-      - db-init
+      gateway:
+        condition: service_healthy
+      feedback_service:
+        condition: service_healthy
+      member_service:
+        condition: service_healthy
+      db-init:
+        condition: service_started
     command: ["sh", "-c", "PYTHONPATH=. pytest -v --cov=services"]
     networks:
       - talent-management-net

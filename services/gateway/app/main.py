@@ -24,6 +24,13 @@ app.add_middleware(
 app.include_router(feedback.router, tags=["Feedback"])
 app.include_router(members.router, tags=["Members"])
 
+@app.get("/health", tags=["Health Check"])
+def health_check():
+    """
+    Health check endpoint to verify that the gateway is running.
+    """
+    return {"status": "ok"}
+
 @app.get("/")
 def read_root():
     return {"message": "API Gateway is running"}

@@ -7,3 +7,4 @@ psycopg2-binary
 pydantic[email]
 pydantic-settings
 python-dotenv
+debugpy

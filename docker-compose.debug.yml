@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  gateway:
+    ports:
+      - "5680:5680"
+    command: >
+      sh -c "echo 'GATEWAY DEBUG MODE IS WORKING' && 
+             python -m debugpy --listen 0.0.0.0:5680 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    working_dir: /app/gateway
+
+  feedback_service:
+    ports:
+      - "5679:5679"
+    command: >
+      sh -c "echo 'FEEDBACK DEBUG MODE IS WORKING' && 
+             python -m debugpy --listen 0.0.0.0:5679 -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload"
+    working_dir: /app/feedback_service
+
+  member_service:
+    ports:
+      - "5678:5678"
+    command: >
+      sh -c "echo 'MEMBER DEBUG MODE IS WORKING' && 
+             python -m debugpy --listen 0.0.0.0:5678 -m uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload"
+    working_dir: /app/member_service
+
+  tests:
+    # This overrides the test command to do nothing and exit cleanly in debug mode.
+    command: ["sh", "-c", "echo 'Tests are disabled in debug mode.' && exit 0"] 

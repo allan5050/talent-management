@@ -130,6 +130,35 @@ docker-compose run --rm tests
 
 This command will start a temporary container, install test dependencies, and run all unit and integration tests against the running services.
 
+## How to Debug
+
+This project is configured for remote debugging of services running inside Docker containers directly from a local instance of VS Code. This is achieved using a `docker-compose.debug.yml` override file, which keeps the primary `docker-compose.yml` clean and production-aligned.
+
+### The Debugging Workflow
+
+1.  **Start the Services in Debug Mode**: To enable debugging, start the application stack using both the base and debug compose files. This command overrides the default startup commands to inject the `debugpy` debugger and exposes the necessary debugger ports. The integrated test suite is automatically disabled in this mode.
+
+    ```bash
+    docker-compose -f docker-compose.yml -f docker-compose.debug.yml up --build
+    ```
+    When running, the logs will show a confirmation message (e.g., `GATEWAY DEBUG MODE IS WORKING`) for each service.
+
+2.  **Set Breakpoints**: Place breakpoints in your VS Code editor within any of the services' Python files (e.g., in `services/gateway/app/routes/feedback.py`).
+
+3.  **Attach the Debugger**: In VS Code, navigate to the **Run and Debug** panel (`Ctrl+Shift+D`). From the dropdown menu, select the service you wish to attach to (e.g., `Attach to Gateway Service`) and press `F5`. The VS Code status bar will turn orange, indicating a successful connection.
+
+4.  **Trigger the Breakpoint**: Send an API request to an endpoint handled by the service you are debugging. For example, to trigger a breakpoint in the gateway's feedback route, you can use PowerShell:
+
+    ```powershell
+    $feedbackBody = @{ "feedback" = "Debugging the gateway." } | ConvertTo-Json
+    Invoke-WebRequest -Uri http://localhost:8000/organizations/8a1a7ac2-e528-4e63-8e2c-3a37d1472e35/feedback `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body $feedbackBody
+    ```
+
+The debugger will now pause execution at your breakpoint, allowing you to inspect variables, step through code, and analyze the call stack.
+
 ## Key Architectural Decisions
 
 - **RESTful Design:** The API uses a hierarchical, RESTful structure (`/organizations/{id}/members`) to create a logical and scalable design, prioritizing this over the simplified endpoint examples in the specification to demonstrate a more robust architectural approach.

@@ -5,7 +5,9 @@ import logging
 class GatewayHTTPClient:
     async def forward_request(self, request: Request, target_url: str) -> Response:
         try:
-            async with httpx.AsyncClient() as client:
+            # Setting a longer timeout to allow for step-by-step debugging
+            timeout = httpx.Timeout(300.0, connect=5.0)
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 # The target_url is now the complete URL for the downstream service
                 url = target_url
                 
